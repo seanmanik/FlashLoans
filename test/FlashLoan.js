@@ -32,7 +32,7 @@ describe('Flashloan', () => {
         await transaction.wait()
 
         // Deposit tokens in pool
-        transaction = await flashLoan.connect(deployer).depositTokens(1000000)
+        transaction = await flashLoan.connect(deployer).depositTokens(tokens(1000000))
         await transaction.wait()
 
         // Deploy FlashLoanReceiver
@@ -43,14 +43,18 @@ describe('Flashloan', () => {
     describe('Deployment', () => {
 
         it('successfully sends tokens to flash loan pool', async () => {
-            expect(await token.balanceOf(flashLoan.address)).to.equal(1000000)
+            expect(await token.balanceOf(flashLoan.address)).to.equal(tokens(1000000))
         })
     })
 
     describe('Borrowing funds', () => {
 
         it('borrows funds from the pool', async () => {
-            let amount = tokens()
+            let amount = tokens(100)
+            let transaction = await flashLoanReceiver.connect(deployer).executeFlashLoan(amount)
+            let result = await transaction.wait()
+
+            await expect(transaction).to.emit(flashLoanReceiver, 'LoanReceived').withArgs(token.address, amount)
         })
     })
 })
